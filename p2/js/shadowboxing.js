@@ -17,7 +17,7 @@ SHOW_RAW = false;
 SHOW_SHADOW = true;
 // input option: kinectdepth (kinect depth sensor), kinectrgb (kinect camera), 
 // or webcam (computer camera)
-var INPUT = "webcam"; 
+var INPUT = "kinectdepth"; 
 // A difference of >= SHADOW_THRESHOLD across RGB space from the background
 // frame is marked as foreground
 var SHADOW_THRESHOLD = 10;
