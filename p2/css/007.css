@@ -1,0 +1,14 @@
+#capture
+{
+	width: 640px;
+	height: 480px;
+	position: relative;
+	overflow: hidden;
+}
+
+#barrelOverlay
+{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}

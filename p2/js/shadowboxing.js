@@ -17,7 +17,7 @@ SHOW_RAW = false;
 SHOW_SHADOW = true;
 // input option: kinectdepth (kinect depth sensor), kinectrgb (kinect camera), 
 // or webcam (computer camera)
-var INPUT = "kinectdepth"; 
+var INPUT = "webcam"; 
 // A difference of >= SHADOW_THRESHOLD across RGB space from the background
 // frame is marked as foreground
 var SHADOW_THRESHOLD = 10;
@@ -38,7 +38,7 @@ var kinect, kinectSocket = null;
 var started = false;
 
 $(document).ready(function() {
-    initializeDOMElements();
+    initializeDOMElements();    // Initialize other dom element
 
     $("#background").attr('disabled', true);
 	if (INPUT == "kinectdepth" || INPUT == "kinectrgb") {
@@ -53,6 +53,8 @@ $(document).ready(function() {
             renderShadow();
         }
     });
+    
+    barrelOverlay.init();   //  Initialize barrelOverlay
 });
 
 /*
