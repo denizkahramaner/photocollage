@@ -1,14 +1,23 @@
-//	CS247: Calvin Fernandez, Maurizio 
+//	Stanford University CS247
+// 	
+//			Calvin Fernandez: cfernand@cs.stanford.edu  
+//			Maurizio Caligaris 
+//			Roberto Goizueta
+//			Deniz Kahramaner
 
 var package = 
 {
-	//	All data for barrel initialization 
+	//	All data for 007 initialization 
 
 	barrelPath: "..\/images\/barrel007.png",
 	barrelID: 	"barrelOverlay",
 	barrelCenterCheat: {x: -170, y: 0},	//	X and Y constant offset to barrel center
 	barrelCenter: {x: 0, y: 0},			//	Barrel center
+	
 	bloodPath: "..\/images\/blood007.png",
+	bloodID: "bloodOverlay", 
+	bloodSpeed: 8000,					//	Speed of falling blood. Used in animation
+
 	parent_container: "capture",
 	canvas_container: "shadowCanvas"
 };
@@ -51,7 +60,8 @@ var barrelOverlay =
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
 				}))
-			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})});
+			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
+			.click(function() {bloodOverlay.bleed()});
 	},
 
 	interpolate: function(sensor_width, sensor_height)
@@ -67,7 +77,32 @@ var barrelOverlay =
 	}
 }
 
+var bloodOverlay = 
+{
+	init: function()
+	{
+		//	Initializes blood overlay
+		$("#" + package.parent_container)
+			.append($("<img>")
+				.attr({"id": package.bloodID,
+						"src": package.bloodPath}));
+	},
+
+	bleed: function()
+	{
+		//	Animates the blood overlay
+		$("#" + package.bloodID).slideDown(package.bloodSpeed);
+	},
+
+	heal: function()
+	{
+		//	Cleans up all the blood
+		$("#" + package.bloodID).hide();
+	}
+}
+
 $(function()
 {
 	barrelOverlay.init();
+	bloodOverlay.init();
 });

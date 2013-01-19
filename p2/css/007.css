@@ -12,3 +12,10 @@
 	left: 0px;
 	top: 0px;
 }
+
+#bloodOverlay
+{
+	width: 640px;
+	position: absolute;
+	display: none;
+}
