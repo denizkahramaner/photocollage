@@ -53,8 +53,6 @@ $(document).ready(function() {
             renderShadow();
         }
     });
-    
-    barrelOverlay.init();   //  Initialize barrelOverlay
 });
 
 /*
