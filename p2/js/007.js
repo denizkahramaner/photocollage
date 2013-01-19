@@ -1,9 +1,9 @@
 //	Stanford University CS247
 // 	
 //			Calvin Fernandez: cfernand@cs.stanford.edu  
-//			Maurizio Caligaris 
-//			Roberto Goizueta
-//			Deniz Kahramaner
+//			Maurizio Caligaris:
+//			Roberto Goizueta:
+//			Deniz Kahramaner:
 
 var package = 
 {
@@ -99,6 +99,27 @@ var bloodOverlay =
 		//	Cleans up all the blood
 		$("#" + package.bloodID).hide();
 	}
+}
+
+var kinectMotion = 
+{
+	//	TODO: Interface with Kinect and KinectJS
+	//	MOTIONTRACKING: Interpolate coordinates
+	//	from kinect to map to screen coordinates
+	//	after interpolation call barrelOverlay.move
+	//	and the barrel center around whatever interpolated
+	//	coordinates you pass it.
+	//	HANDTRACKING: Watch at least one hand, 
+	//	better both. If the hand is above a certain
+	//	threshold height, classify that as a gun shot
+	//	and call bloodOverlay.bleed()
+}
+
+var orchestra =
+{
+	//	TODO: Simple javascript class 
+	//	for firing music at specific points in 
+	//	the interaction. 
 }
 
 $(function()
