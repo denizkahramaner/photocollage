@@ -19,3 +19,8 @@
 	position: absolute;
 	display: none;
 }
+
+#barrelSong
+{
+	type: hidden;
+}
