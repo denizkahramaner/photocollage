@@ -38,7 +38,7 @@ var kinect, kinectSocket = null;
 var started = false;
 
 $(document).ready(function() {
-    initializeDOMElements();
+    initializeDOMElements();    // Initialize other dom element
 
     $("#background").attr('disabled', true);
 	if (INPUT == "kinectdepth" || INPUT == "kinectrgb") {
