@@ -110,11 +110,18 @@ var ballBlackOverlay =
 		{
 			$("#" + package.parent_container)
 			.append($("<img>")
-				.attr({"id": package.ballBlackId,
-						"src": package.ballBlackPath}));
+				.attr({"id": package.ballBlackID,
+						"src": package.ballBlackPath,
+						"left": '-200px',
+						"top": '0px',
+						"z-index": "10"}));
+		},
+
+		blackBallAnimate: function()
+		{
+			var $blackBall = $("#" + package.blackBallID);
+
 		}
-
-
 }
 
 
@@ -186,6 +193,7 @@ var orchestra =
 
 $(function()
 {
-	barrelOverlay.init();
+	ballBlackOverlay.init();
+	// barrelOverlay.init();
 	bloodOverlay.init();
 });
