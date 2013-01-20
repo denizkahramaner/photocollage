@@ -19,7 +19,10 @@ var package =
 	bloodSpeed: 8000,					//	Speed of falling blood. Used in animation
 
 	parent_container: "capture",
-	canvas_container: "shadowCanvas"
+	canvas_container: "shadowCanvas",
+
+	view_width: 640,
+	view_height: 480
 };
 
 var barrelOverlay = 
@@ -62,12 +65,6 @@ var barrelOverlay =
 				}))
 			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
 			.click(function() {bloodOverlay.bleed()});
-	},
-
-	interpolate: function(sensor_width, sensor_height)
-	{
-		//	TODO: Add interpolator to map kinect coordinates
-		//	to screen coordinates. 
 	},
 
 	barrelAnimate: function(type)
@@ -113,6 +110,54 @@ var kinectMotion =
 	//	better both. If the hand is above a certain
 	//	threshold height, classify that as a gun shot
 	//	and call bloodOverlay.bleed()
+	JOINTS: ['HIP_CENTER', 'HAND_LEFT', 'HAND_RIGHT'],
+
+	interpolate: function(type, point)
+	{	
+		//	Interpolates the coordinates of kinect to 
+		//	map to coordinates of viewing window
+		if (type === 'x')
+		{
+			return Math.max(point / 100 * package.view_width, 0);
+		}
+		else if (type === 'y')
+		{
+			return Math.max(point / 100 * package.view_height, 0);
+		}
+	},
+
+	init: function()
+	{
+		kinect.setUp({
+    		players:  1,   
+    		relative: true,
+    		meters: false,
+    		sensitivity: 1.0,                 // # of players, max = 2
+    		joints:   this.JOINTS,          // array of joints to track
+    		gestures: ['ESCAPE', 'JUMP']    // array of gestures to track
+		})
+		.setPercentageMode()
+		.sessionPersist()
+		.modal.make('../css/knctModal.css')    // Green modal connection bar
+		.notif.make();
+
+		console.log("finished");
+		kinect.onMessage(function()
+		{
+			var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
+			var interpY = kinectMotion.interpolate('y', this.coords[0][0].y);
+			barrelOverlay.move({'x': interpX, 'y': interpY});
+
+			if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
+					( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
+			{
+				bloodOverlay.bleed();
+				//orchestra.fire();
+			}
+		});
+	}
+
+
 }
 
 var orchestra =
@@ -124,6 +169,7 @@ var orchestra =
 
 $(function()
 {
+	kinectMotion.init();
 	barrelOverlay.init();
 	bloodOverlay.init();
 });
