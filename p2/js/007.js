@@ -22,7 +22,16 @@ var package =
 	canvas_container: "shadowCanvas",
 
 	view_width: 640,
-	view_height: 480
+	view_height: 480,
+
+	barrelSongPath: "..\/audio\/barrel.wav",	// James Bond's theme song
+	barrelSongID: "barrelSong",
+
+	ballWhitePath : "..\/images\/ballWhite.png",	// White ball that scrolls left and right
+	ballWhiteID: "ballWhite",
+
+	ballBlackPath: "..\/images\/ballBlack.png",		// White ball with black background
+	ballBlackID: "ballBlack"
 };
 
 var barrelOverlay = 
@@ -65,14 +74,46 @@ var barrelOverlay =
 				}))
 			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
 			.click(function() {bloodOverlay.bleed()});
+
+
 	},
 
 	barrelAnimate: function(type)
 	{
 		//	TODO: Add custom animations to barrel movement
 		//	eg the shaking after the shot and stuff.
+
+		var $barrel = $("#" + package.barrelID);
+		var $currentLeft = parseInt($barrel.get(0).style.left, 10);
+		var $currentTop = parseInt($barrel.get(0).style.top, 10);
+		// Slide left
+		var $leftDestination1 = $currentLeft + 100;
+ 		$barrel.animate({left:$leftDestination1 + 'px'}, {duration: 1200});
+
+ 		// Slide right
+ 		var $leftDestination2 = $leftDestination1 - 200;
+ 		$barrel.animate({left:$leftDestination2 + 'px'}, {duration: 1200});
+
+ 		// Slide diagonally towards the bottom
+ 		var $topDestination1 = $currentTop + 150;
+
+ 		$barrel.animate({left:$leftDestination1 + 'px', top: $topDestination1 +'px'}, {duration: 1200});
 	}
+
 }
+var ballBlackOverlay = 
+{
+		init: function()
+		{
+			$("#" + package.parent_container)
+			.append($("<img>")
+				.attr({"id": package.ballBlackId,
+						"src": package.ballBlackPath}));
+		}
+
+
+}
+
 
 var bloodOverlay = 
 {
@@ -162,9 +203,30 @@ var kinectMotion =
 
 var orchestra =
 {
+
 	//	TODO: Simple javascript class 
 	//	for firing music at specific points in 
 	//	the interaction. 
+
+	barrelSongInit: function()
+	{
+		$("#" + package.barrelSongID).src = package.barrelSongPath;
+	},
+
+	barrelSongPlayFromTime: function(currentTime)
+	{
+		$("#" + package.barrelSongID).get(0).play(currentTime);
+	},
+
+	barrelSongPlay: function()
+	{
+		$("#" + package.barrelSongID).get(0).play();
+	},
+
+	barrelSongPause: function()
+	{
+		$("#" + package.barrelSongID).get(0).pause();
+	}
 }
 
 $(function()
