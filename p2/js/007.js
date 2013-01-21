@@ -68,9 +68,11 @@ var barrelOverlay =
 				.load(function(){
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
-				}))
-			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
-			.click(function() {bloodOverlay.bleed()});
+				}));
+
+		$("#" + package.barrelID).get(0).style.opacity = '0';
+			/*.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
+			.click(function() {bloodOverlay.bleed()});*/
 
 
 	},
@@ -103,23 +105,77 @@ var barrelOverlay =
  		$barrel.animate({left:$leftDestination1 + 'px', top: $topDestination1 +'px'}, {duration: 1200});
 	}
 
-}
-var ballBlackOverlay = 
+};
+var ballOverlay = 
 {
 		init: function()
 		{
+
 			$("#" + package.parent_container)
 			.append($("<img>")
 				.attr({"id": package.ballBlackID,
 						"src": package.ballBlackPath,
-						"left": '-200px',
 						"top": '0px',
 						"z-index": "10"}));
+			var $ballBlack = $("#" + package.ballBlackID);
+			$ballBlack.get(0).style.left = '-650px';
+
+
+			$("#" + package.parent_container)
+			.append($("<img>")
+				.attr({"id": package.ballWhiteID,
+						"src": package.ballWhitePath,
+						"top": '0px',
+						"z-index": "11"}));
+			var $ballWhite = $("#" + package.ballWhiteID);
+			$ballWhite.get(0).style.left = '-650px';
+
 		},
 
-		blackBallAnimate: function()
+		ballAnimateRight: function()
 		{
-			var $blackBall = $("#" + package.blackBallID);
+			var $ballBlack = $("#" + package.ballBlackID);
+			var $ballWhite = $("#" + package.ballWhiteID);
+			var $currentLeftBlack = parseInt($ballBlack.get(0).style.left, 10);
+			$ballWhite.get(0).style.left = $ballBlack.get(0).style.left;
+			$ballWhite.get(0).style.opacity = '1';
+
+			$ballBlack.animate({left:$currentLeftBlack + 100 + 'px'}, {duration: 600});
+			$ballWhite.animate({opacity: 0},{duration:600});
+		},
+
+		ballAnimateLeft: function()
+		{
+			var $ballBlack = $("#" + package.ballBlackID);
+			var $ballWhite = $("#" + package.ballWhiteID);
+			var $currentLeftBlack = parseInt($ballBlack.get(0).style.left, 10);
+			$ballWhite.get(0).style.left = $ballBlack.get(0).style.left;
+			$ballWhite.get(0).style.opacity = '1';
+
+			$ballBlack.animate({left:$currentLeftBlack - 100 + 'px'}, {duration: 600});
+			$ballWhite.animate({opacity: 0},{duration:600});
+		},
+
+		ballGrows: function()
+		{
+			// Grows the ball
+			var $barrel = $("#" + package.barrelID);
+			var $ballBlack = $("#" + package.ballBlackID);
+
+			var $imageWidth = parseInt($ballBlack.width(), 10);
+			var $imageHeight = parseInt($ballBlack.height(), 10);
+
+			// Makes the barrel visible
+			$barrel.get(0).style.opacity = '1';
+
+			// increase factor
+			var factor = 2;
+		    $ballBlack.animate({
+		        top: '-=' + $imageHeight / factor,
+		        left: '-=' + $imageWidth / factor,
+		        width: $imageWidth * factor
+		    });
+
 
 		}
 }
@@ -193,7 +249,8 @@ var orchestra =
 
 $(function()
 {
-	ballBlackOverlay.init();
-	// barrelOverlay.init();
+	
+	barrelOverlay.init();
+	ballOverlay.init();
 	bloodOverlay.init();
 });

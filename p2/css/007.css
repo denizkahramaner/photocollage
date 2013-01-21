@@ -20,6 +20,16 @@
 	display: none;
 }
 
+#ballBlack
+{
+	position:absolute;
+}
+
+#ballWhite
+{
+	position:absolute;
+}
+
 #barrelSong
 {
 	type: hidden;
