@@ -75,8 +75,8 @@ var barrelOverlay =
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
 					orchestra.loadMusic();
-				})
-				.css("opacity", 0));
+				}));
+				//.css("opacity", 0));
 
 			//$("#" + package.barrelID).get(0).style.opacity = '0';
 	},
@@ -296,10 +296,10 @@ var orchestra =
 		//	it that gets called as soon as it is finished
 		//	playing. We call the theme song as soon as the 
 		//	gun shot is done.
-		$("#" + package.gunShotID)
-			.bind("ended", function(){ orchestra.playTheme(); });
-		$("#" + package.themeSongID)
-			.attr("src", package.themeSongPath)
+		$("#" + package.gunShotID).attr("src", package.gunShotPath);
+			//.bind("ended", function(){ orchestra.playTheme(); });
+		/*$("#" + package.themeSongID)
+			.attr("src", package.themeSongPath)*/
 	},
 
 	playTheme: function()
@@ -324,8 +324,8 @@ var orchestra =
 
 $(function()
 {
-	//kinectMotion.init();
+	kinectMotion.init();
 	barrelOverlay.init();
-	ballOverlay.init();
+	//ballOverlay.init();
 	bloodOverlay.init();
 });
