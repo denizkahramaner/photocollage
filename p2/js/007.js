@@ -21,6 +21,9 @@ var package =
 	parent_container: "capture",
 	canvas_container: "shadowCanvas",
 
+	view_width: 640,
+	view_height: 480,
+
 	barrelSongPath: "..\/audio\/barrel.wav",	// James Bond's theme song
 	barrelSongID: "barrelSong",
 
@@ -75,12 +78,6 @@ var barrelOverlay =
 			.click(function() {bloodOverlay.bleed()});*/
 
 
-	},
-
-	interpolate: function(sensor_width, sensor_height)
-	{
-		//	TODO: Add interpolator to map kinect coordinates
-		//	to screen coordinates. 
 	},
 
 	barrelAnimate: function(type)
@@ -158,25 +155,73 @@ var ballOverlay =
 
 		ballGrows: function()
 		{
-			// Grows the ball
+			// ----- REALIGNS BARREL ACCORDING TO CENTER OF THE BALL -------
 			var $barrel = $("#" + package.barrelID);
 			var $ballBlack = $("#" + package.ballBlackID);
 
-			var $imageWidth = parseInt($ballBlack.width(), 10);
-			var $imageHeight = parseInt($ballBlack.height(), 10);
+			var $ballWidth = parseInt($ballBlack.width(), 10);
+			var $ballHeight = parseInt($ballBlack.height(), 10);
 
-			// Makes the barrel visible
+			// Makes the barrel visible and put the barrel in the right place
 			$barrel.get(0).style.opacity = '1';
+			// Left distance of the center of the ball
+			var $ballCenterLeft = parseInt($ballBlack.get(0).style.left, 10) + 450;
+			var $ballCenterTop = 170;
+			// Reposition barrel so that barrel's center aligns with the ball that will grow
+			$barrel.get(0).style.left = -1250 + $ballCenterLeft + 'px';
+			$barrel.get(0).style.top = -1250 + $ballCenterTop+ 'px';
+
+			// ----- END OF REALIGNMENT
+
+			this.ballGrowsHelper();
+		},
+
+		ballGrowsHelper: function()
+		{
+			var $ballBlack = $("#" + package.ballBlackID);
+			var $ballWidth = parseInt($ballBlack.width(), 10);
+			var $ballHeight = parseInt($ballBlack.height(), 10);
+
 
 			// increase factor
-			var factor = 2;
-		    $ballBlack.animate({
-		        top: '-=' + $imageHeight / factor,
-		        left: '-=' + $imageWidth / factor,
-		        width: $imageWidth * factor
-		    });
+			var increase = 500;
+			
+			/*
+			$ballBlack.css({
+            	'-moz-transform':'scale('+factor+')',
+            	'-webkit-transform':'scale('+factor+')'
+    		});
+*/
+			/*
+    		$ballBlack.animate({
+    			top: '-=' + ( ( $ballHeight / $ballWidth ) * increase ) / 2,
+    			left: '-=' + increase / 2,
+    			width: '+=' + increase,
+    			height: '+=' + ( $ballHeight / $ballWidth ) * increase
+    		});
+*/
+
+    		$ballBlack.css({
+    			'-webkit-transition': 'all 3s linear',
+    			'-moz-transition': 'all 3s linear',
+    			'-o-transition': 'all 3s linear',
+			    '-webkit-transform': 'scale(50)',
+			    '-moz-transform': 'scale(50)',
+			    '-o-transform': 'scale(50)'
+			});
 
 
+			/*
+    		
+		    $ballBlack.animate(
+		    	{scale: '+=3'}, {queue: false, duration: 1000}
+            	/*
+		        top: '-=' + $ballHeight / factor,
+		        left: '-=' + $ballWidth / factor ,
+		        width: $ballWidth * factor
+		    );
+
+			*/
 		}
 }
 
@@ -217,6 +262,54 @@ var kinectMotion =
 	//	better both. If the hand is above a certain
 	//	threshold height, classify that as a gun shot
 	//	and call bloodOverlay.bleed()
+	JOINTS: ['HIP_CENTER', 'HAND_LEFT', 'HAND_RIGHT'],
+
+	interpolate: function(type, point)
+	{	
+		//	Interpolates the coordinates of kinect to 
+		//	map to coordinates of viewing window
+		if (type === 'x')
+		{
+			return Math.max(point / 100 * package.view_width, 0);
+		}
+		else if (type === 'y')
+		{
+			return Math.max(point / 100 * package.view_height, 0);
+		}
+	},
+
+	init: function()
+	{
+		kinect.setUp({
+    		players:  1,   
+    		relative: true,
+    		meters: false,
+    		sensitivity: 1.0,                 // # of players, max = 2
+    		joints:   this.JOINTS,          // array of joints to track
+    		gestures: ['ESCAPE', 'JUMP']    // array of gestures to track
+		})
+		.setPercentageMode()
+		.sessionPersist()
+		.modal.make('../css/knctModal.css')    // Green modal connection bar
+		.notif.make();
+
+		console.log("finished");
+		kinect.onMessage(function()
+		{
+			var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
+			var interpY = kinectMotion.interpolate('y', this.coords[0][0].y);
+			barrelOverlay.move({'x': interpX, 'y': interpY});
+
+			if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
+					( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
+			{
+				bloodOverlay.bleed();
+				//orchestra.fire();
+			}
+		});
+	}
+
+
 }
 
 var orchestra =
@@ -249,7 +342,8 @@ var orchestra =
 
 $(function()
 {
-	
+
+	//kinectMotion.init();
 	barrelOverlay.init();
 	ballOverlay.init();
 	bloodOverlay.init();
