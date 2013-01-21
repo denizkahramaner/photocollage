@@ -20,7 +20,7 @@
 	display: none;
 }
 
-#barrelSong
+#gunShot, #themeSong
 {
-	type: hidden;
+	display: none;
 }

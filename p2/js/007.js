@@ -11,7 +11,7 @@ var package =
 
 	barrelPath: "..\/images\/barrel007.png",
 	barrelID: 	"barrelOverlay",
-	barrelCenterCheat: {x: -170, y: 0},	//	X and Y constant offset to barrel center
+	barrelCenterCheat: {x: -170, y: 0},	//	X and Y constant offset to barrel center -170
 	barrelCenter: {x: 0, y: 0},			//	Barrel center
 	
 	bloodPath: "..\/images\/blood007.png",
@@ -24,8 +24,11 @@ var package =
 	view_width: 640,
 	view_height: 480,
 
-	barrelSongPath: "..\/audio\/barrel.wav",	// James Bond's theme song
-	barrelSongID: "barrelSong",
+	themeSongPath: "..\/audio\/barrel.wav",	// James Bond's theme song
+	themeSongID: "themeSong",
+
+	gunShotPath: "..\/audio\/gunshotAndTheme.wav",
+	gunShotID: "gunShot",
 
 	ballWhitePath : "..\/images\/ballWhite.png",	// White ball that scrolls left and right
 	ballWhiteID: "ballWhite",
@@ -71,11 +74,10 @@ var barrelOverlay =
 				.load(function(){
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
+					orchestra.loadMusic();
 				}))
-			.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
-			.click(function() {bloodOverlay.bleed()});
-
-
+			//.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
+			//.click(function() {bloodOverlay.bleed()});
 	},
 
 	barrelAnimate: function(type)
@@ -101,6 +103,7 @@ var barrelOverlay =
 	}
 
 }
+
 var ballBlackOverlay = 
 {
 		init: function()
@@ -110,8 +113,6 @@ var ballBlackOverlay =
 				.attr({"id": package.ballBlackId,
 						"src": package.ballBlackPath}));
 		}
-
-
 }
 
 
@@ -182,7 +183,6 @@ var kinectMotion =
 		.modal.make('../css/knctModal.css')    // Green modal connection bar
 		.notif.make();
 
-		console.log("finished");
 		kinect.onMessage(function()
 		{
 			var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
@@ -192,40 +192,71 @@ var kinectMotion =
 			if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
 					( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
 			{
+				//	If your hand is above a certain point classify as 
+				//	gun fire and queue song and animations.	
 				bloodOverlay.bleed();
-				//orchestra.fire();
+				orchestra.play();
 			}
 		});
 	}
-
-
 }
 
 var orchestra =
 {
 
-	//	TODO: Simple javascript class 
+	//	Simple javascript class 
 	//	for firing music at specific points in 
 	//	the interaction. 
 
-	barrelSongInit: function()
+	loadMusic: function()
 	{
-		$("#" + package.barrelSongID).src = package.barrelSongPath;
+		//	Function that loads all music
+		//	ideally to be called after other media
+		//	has been loaded to keep page loads fast.
+		//	The gun shot has a function attached to
+		//	it that gets called as soon as it is finished
+		//	playing. We call the theme song as soon as the 
+		//	gun shot is done.
+		$("#" + package.gunShotID)
+			.bind("ended", function(){ orchestra.playTheme(); });
+		$("#" + package.themeSongID)
+			.attr("src", package.themeSongPath)
+	},
+
+	playTheme: function()
+	{
+		//	Plays the 007 theme song
+		$("#" + package.themeSongID).get(0).play();
+	},
+
+	play: function()
+	{
+		//	Plays music from the gunshot start
+		$("#" + package.gunShotID).get(0).play();
+	},
+
+	pause: function()
+	{
+		//	Pauses all currently playing music
+		$("#" + package.themeSongID).get(0).pause();
+		$("#" + package.gunShotID).get(0).pause();
 	},
 
 	barrelSongPlayFromTime: function(currentTime)
 	{
-		$("#" + package.barrelSongID).get(0).play(currentTime);
+		$("#" + package.themeSongID).get(0).play(currentTime);
 	},
 
 	barrelSongPlay: function()
 	{
-		$("#" + package.barrelSongID).get(0).play();
+		$("#" + package.gunShotID).get(0).play();	
+		$("#" + package.themeSongID).get(0).play();
 	},
 
 	barrelSongPause: function()
 	{
-		$("#" + package.barrelSongID).get(0).pause();
+		$("#" + package.themeSongID).get(0).pause();
+		$("#" + package.gunShotID).get(0).pause();
 	}
 }
 
