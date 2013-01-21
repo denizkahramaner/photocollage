@@ -75,14 +75,15 @@ var barrelOverlay =
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
 					orchestra.loadMusic();
-				}))
-			//.mousemove(function(){ barrelOverlay.move({"x": event.clientX, "y": event.clientY})})
-			//.click(function() {bloodOverlay.bleed()});
+				})
+				.css("opacity", 0));
+
+			//$("#" + package.barrelID).get(0).style.opacity = '0';
 	},
 
 	barrelAnimate: function(type)
 	{
-		//	TODO: Add custom animations to barrel movement
+		//	Custom animations to barrel movement
 		//	eg the shaking after the shot and stuff.
 
 		var $barrel = $("#" + package.barrelID);
@@ -101,18 +102,96 @@ var barrelOverlay =
 
  		$barrel.animate({left:$leftDestination1 + 'px', top: $topDestination1 +'px'}, {duration: 1200});
 	}
+};
 
-}
-
-var ballBlackOverlay = 
+var ballOverlay = 
 {
-		init: function()
-		{
-			$("#" + package.parent_container)
+	init: function()
+	{
+		$("#" + package.parent_container)
 			.append($("<img>")
-				.attr({"id": package.ballBlackId,
-						"src": package.ballBlackPath}));
-		}
+				.attr({"id": package.ballBlackID,
+						"src": package.ballBlackPath,
+						"top": '0px',
+						"z-index": "10"}));
+		var $ballBlack = $("#" + package.ballBlackID);
+		$ballBlack.get(0).style.left = '-650px';
+
+		$("#" + package.parent_container)
+			.append($("<img>")
+				.attr({"id": package.ballWhiteID,
+						"src": package.ballWhitePath,
+						"top": '0px',
+						"z-index": "11"}));
+		var $ballWhite = $("#" + package.ballWhiteID);
+		$ballWhite.get(0).style.left = '-650px';
+	},
+
+	ballAnimateRight: function()
+	{
+		var $ballBlack = $("#" + package.ballBlackID);
+		var $ballWhite = $("#" + package.ballWhiteID);
+		var $currentLeftBlack = parseInt($ballBlack.get(0).style.left, 10);
+		$ballWhite.get(0).style.left = $ballBlack.get(0).style.left;
+		$ballWhite.get(0).style.opacity = '1';
+
+		$ballBlack.animate({left:$currentLeftBlack + 100 + 'px'}, {duration: 600});
+		$ballWhite.animate({opacity: 0},{duration:600});
+	},
+
+	ballAnimateLeft: function()
+	{
+		var $ballBlack = $("#" + package.ballBlackID);
+		var $ballWhite = $("#" + package.ballWhiteID);
+		var $currentLeftBlack = parseInt($ballBlack.get(0).style.left, 10);
+		$ballWhite.get(0).style.left = $ballBlack.get(0).style.left;
+		$ballWhite.get(0).style.opacity = '1';
+
+		$ballBlack.animate({left:$currentLeftBlack - 100 + 'px'}, {duration: 600});
+		$ballWhite.animate({opacity: 0},{duration:600});
+	},
+
+	ballGrows: function()
+	{
+		// ----- REALIGNS BARREL ACCORDING TO CENTER OF THE BALL -------
+		var $barrel = $("#" + package.barrelID);
+		var $ballBlack = $("#" + package.ballBlackID);
+
+		var $ballWidth = parseInt($ballBlack.width(), 10);
+		var $ballHeight = parseInt($ballBlack.height(), 10);
+
+		// Makes the barrel visible and put the barrel in the right place
+		$barrel.get(0).style.opacity = '1';
+		// Left distance of the center of the ball
+		var $ballCenterLeft = parseInt($ballBlack.get(0).style.left, 10) + 450;
+		var $ballCenterTop = 170;
+		// Reposition barrel so that barrel's center aligns with the ball that will grow
+		$barrel.get(0).style.left = -1250 + $ballCenterLeft + 'px';
+		$barrel.get(0).style.top = -1250 + $ballCenterTop+ 'px';
+
+		// ----- END OF REALIGNMENT
+
+		this.ballGrowsHelper();
+	},
+
+	ballGrowsHelper: function()
+	{
+		var $ballBlack = $("#" + package.ballBlackID);
+		var $ballWidth = parseInt($ballBlack.width(), 10);
+		var $ballHeight = parseInt($ballBlack.height(), 10);
+
+		//	scale factor
+		var scale = 50;
+			
+    	$ballBlack.css({
+    		'-webkit-transition': 'all 3s linear',
+    		'-moz-transition': 'all 3s linear',
+    		'-o-transition': 'all 3s linear',
+			'-webkit-transform': 'scale('+scale+')',
+			'-moz-transform': 'scale('+scale+')',
+			'-o-transform': 'scale('+scale+')'
+		});
+	}
 }
 
 
@@ -241,28 +320,12 @@ var orchestra =
 		$("#" + package.themeSongID).get(0).pause();
 		$("#" + package.gunShotID).get(0).pause();
 	},
-
-	barrelSongPlayFromTime: function(currentTime)
-	{
-		$("#" + package.themeSongID).get(0).play(currentTime);
-	},
-
-	barrelSongPlay: function()
-	{
-		$("#" + package.gunShotID).get(0).play();	
-		$("#" + package.themeSongID).get(0).play();
-	},
-
-	barrelSongPause: function()
-	{
-		$("#" + package.themeSongID).get(0).pause();
-		$("#" + package.gunShotID).get(0).pause();
-	}
 }
 
 $(function()
 {
-	kinectMotion.init();
+	//kinectMotion.init();
 	barrelOverlay.init();
+	ballOverlay.init();
 	bloodOverlay.init();
 });

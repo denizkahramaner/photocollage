@@ -24,3 +24,13 @@
 {
 	display: none;
 }
+
+#ballBlack
+{
+	position:absolute;
+}
+
+#ballWhite
+{
+	position:absolute;
+}
