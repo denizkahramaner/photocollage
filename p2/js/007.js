@@ -34,7 +34,9 @@ var package =
 	ballWhiteID: "ballWhite",
 
 	ballBlackPath: "..\/images\/ballBlack.png",		// White ball with black background
-	ballBlackID: "ballBlack"
+	ballBlackID: "ballBlack",
+
+	resetButtonID: "reset"
 };
 
 var barrelOverlay = 
@@ -284,6 +286,8 @@ var kinectMotion =
 	shootingEnabled: false,
 	barrelTracking: false,
 	playerFound: false, 
+	dwell: 0,
+	dwellTolerance: 10,
 
 	enableBarrelTracking: function()
 	{
@@ -343,6 +347,7 @@ var kinectMotion =
 
 		kinect.onMessage(function()
 		{
+			//	All kinect messages here
 			if ( kinectMotion.barrelTracking === true)
 			{
 				var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
@@ -353,13 +358,28 @@ var kinectMotion =
 			{
 				//	Disable shooting so people don't accidentally shoot 
 				//	randomly
-				if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -90 || 
-						( this.coords[0][2].y - this.coords[0][0].y ) <= -90)
+				if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
+						( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
 				{
 					//	If your hand is above a certain point classify as 
-					//	gun fire and queue song and animations.	
-					bloodOverlay.bleed();
-					orchestra.play();
+					//	gun fire.
+					if ( kinectMotion.dwell >= kinectMotion.dwellTolerance )
+					{	
+						//	If you've dwelled in the shooting position for
+						//	long enough, queue animations
+						bloodOverlay.bleed();
+						orchestra.play();
+					}
+					else
+					{
+						//	Haven't dwelled long enough. Keep dwelling!
+						kinectMotion.dwell ++;
+					}
+				}
+				else
+				{
+					//	Dwell back to zero. Sorry :(
+					kinectMotion.dwell = 0;
 				}
 			}
 		});
@@ -383,15 +403,6 @@ var orchestra =
 		//	playing. We call the theme song as soon as the 
 		//	gun shot is done.
 		$("#" + package.gunShotID).attr("src", package.gunShotPath);
-			//.bind("ended", function(){ orchestra.playTheme(); });
-		/*$("#" + package.themeSongID)
-			.attr("src", package.themeSongPath)*/
-	},
-
-	playTheme: function()
-	{
-		//	Plays the 007 theme song
-		$("#" + package.themeSongID).get(0).play();
 	},
 
 	play: function()
@@ -403,8 +414,8 @@ var orchestra =
 	pause: function()
 	{
 		//	Pauses all currently playing music
-		$("#" + package.themeSongID).get(0).pause();
 		$("#" + package.gunShotID).get(0).pause();
+		$("#" + package.gunShotID).get(0).currentTime = 0;
 	},
 }
 
@@ -415,4 +426,11 @@ $(function()
 	ballOverlay.init();
 	bloodOverlay.init();
 	ballOverlay.animate();
+
+	$("#" + package.resetButtonID).bind("click", function()
+	{
+		bloodOverlay.heal();
+		orchestra.pause();
+		kinectMotion.dwell = 0;
+	});
 });
