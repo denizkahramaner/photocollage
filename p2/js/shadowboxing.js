@@ -88,6 +88,7 @@ function initializeDOMElements() {
  * Starts the connection to the Kinect
  */
 function setUpKinect() {
+
 	kinect.sessionPersist()
 		  .modal.make('css/knctModal.css')
 		  .notif.make();
@@ -95,6 +96,10 @@ function setUpKinect() {
 	kinect.addEventListener('openedSocket', function() {
 		startKinect();
 	});
+
+    if ($('#background').attr('disabled')) {
+        $('#background').attr('disabled', false);
+    }
 }
 
 /*
@@ -134,10 +139,10 @@ function startKinect() {
 	kinectSocket.onmessage = function( e ) {
 		if (e.data.indexOf("data:image/jpeg") == 0) {
 			var image = new Image();
-			image.src = e.data;
 			image.onload = function() {
 				rawContext.drawImage(image, 0, 0, 640, 480);
 			}
+            image.src = e.data;
 			return false;
 		}
 	};

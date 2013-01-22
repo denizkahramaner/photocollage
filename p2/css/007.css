@@ -20,6 +20,11 @@
 	display: none;
 }
 
+#gunShot, #themeSong
+{
+	display: none;
+}
+
 #ballBlack
 {
 	position:absolute;
@@ -29,14 +34,3 @@
 {
 	position:absolute;
 }
-
-#barrelSong
-{
-	type: hidden;
-}
-
-#ballTransition
-{
-
-}
-
