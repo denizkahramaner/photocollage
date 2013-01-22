@@ -34,7 +34,9 @@ var package =
 	ballWhiteID: "ballWhite",
 
 	ballBlackPath: "..\/images\/ballBlack.png",		// White ball with black background
-	ballBlackID: "ballBlack"
+	ballBlackID: "ballBlack",
+
+	resetButtonID: "reset"
 };
 
 var barrelOverlay = 
@@ -75,8 +77,8 @@ var barrelOverlay =
 					package.barrelCenter.x = $(this).width()/2;
 					package.barrelCenter.y = $(this).height()/2;
 					orchestra.loadMusic();
-				}));
-				//.css("opacity", 0));
+				})
+				.css("opacity", 0));
 
 			//$("#" + package.barrelID).get(0).style.opacity = '0';
 	},
@@ -106,6 +108,9 @@ var barrelOverlay =
 
 var ballOverlay = 
 {
+	timer: 0,
+	ballStep: 1,
+
 	init: function()
 	{
 		$("#" + package.parent_container)
@@ -125,6 +130,51 @@ var ballOverlay =
 						"z-index": "11"}));
 		var $ballWhite = $("#" + package.ballWhiteID);
 		$ballWhite.get(0).style.left = '-650px';
+	},
+
+	animate: function()
+	{
+		this.timer = setInterval("ballOverlay.animationController();", 1000);
+	},
+
+	stopAnimation: function()
+	{
+		clearInterval(this.timer);
+	},
+	animationController: function()
+	{
+		if (this.ballStep > 0)
+		{
+			//Going right
+			if (this.ballStep < 7)
+			{
+				//Still going right
+				this.ballStep ++;
+				this.ballAnimateRight();
+			}
+			else if (this.ballStep >= 7)
+			{
+				//End of the screen
+				this.ballStep = -2;
+				this.ballAnimateLeft();
+			}
+		} 
+		else if (this.ballStep < 0)
+		{
+			//Going left
+			if (this.ballStep > -7)
+			{
+				//Still going left
+				this.ballStep --;
+				this.ballAnimateLeft();
+			}
+			else if (this.ballStep <= -7)
+			{
+				//End of the screen
+				this.ballStep = 2;
+				this.ballAnimateRight();
+			}
+		}
 	},
 
 	ballAnimateRight: function()
@@ -181,15 +231,15 @@ var ballOverlay =
 		var $ballHeight = parseInt($ballBlack.height(), 10);
 
 		//	scale factor
-		var scale = 50;
+		var scale = 80;
 			
     	$ballBlack.css({
-    		'-webkit-transition': 'all 3s linear',
-    		'-moz-transition': 'all 3s linear',
-    		'-o-transition': 'all 3s linear',
+    		'-webkit-transition': 'all 5s linear',
+    		'-moz-transition': 'all 5s linear',
+    		'-o-transition': 'all 5s linear',
 			'-webkit-transform': 'scale('+scale+')',
 			'-moz-transform': 'scale('+scale+')',
-			'-o-transform': 'scale('+scale+')'
+			'-o-transform': 'scale('+scale+')',
 		});
 	}
 }
@@ -233,6 +283,28 @@ var kinectMotion =
 	//	and call bloodOverlay.bleed()
 	JOINTS: ['HIP_CENTER', 'HAND_LEFT', 'HAND_RIGHT'],
 
+	shootingEnabled: false,
+	barrelTracking: false,
+	playerFound: false, 
+	dwell: 0,
+	dwellTolerance: 10,
+
+	enableBarrelTracking: function()
+	{
+		this.barrelTracking = true;
+	},
+	disableBarrelTracking: function()
+	{
+		this.barrelTracking = false;
+	},
+	enableShooting: function()
+	{
+		this.shootingEnabled = true;
+	},
+	disableShooting: function()
+	{
+		this.shootingEnabled = false;
+	},
 	interpolate: function(type, point)
 	{	
 		//	Interpolates the coordinates of kinect to 
@@ -260,21 +332,55 @@ var kinectMotion =
 		.setPercentageMode()
 		.sessionPersist()
 		.modal.make('../css/knctModal.css')    // Green modal connection bar
-		.notif.make();
+		.notif.make()
+		.onPlayerFound(function()
+		{
+			if (kinectMotion.playerFound === false)
+			{
+				kinectMotion.playerFound = true;
+				ballOverlay.stopAnimation();
+				ballOverlay.ballGrows();
+				kinectMotion.barrelTracking = true;
+				kinectMotion.shootingEnabled = true;
+			}
+		});
 
 		kinect.onMessage(function()
 		{
-			var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
-			var interpY = kinectMotion.interpolate('y', this.coords[0][0].y);
-			barrelOverlay.move({'x': interpX, 'y': interpY});
-
-			if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
-					( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
+			//	All kinect messages here
+			if ( kinectMotion.barrelTracking === true)
 			{
-				//	If your hand is above a certain point classify as 
-				//	gun fire and queue song and animations.	
-				bloodOverlay.bleed();
-				orchestra.play();
+				var interpX = kinectMotion.interpolate('x', this.coords[0][0].x);
+				var interpY = kinectMotion.interpolate('y', this.coords[0][0].y);
+				barrelOverlay.move({'x': interpX, 'y': interpY});
+			}
+			if ( kinectMotion.shootingEnabled === true )
+			{
+				//	Disable shooting so people don't accidentally shoot 
+				//	randomly
+				if ( ( this.coords[0][1].y - this.coords[0][0].y ) <= -70 || 
+						( this.coords[0][2].y - this.coords[0][0].y ) <= -70)
+				{
+					//	If your hand is above a certain point classify as 
+					//	gun fire.
+					if ( kinectMotion.dwell >= kinectMotion.dwellTolerance )
+					{	
+						//	If you've dwelled in the shooting position for
+						//	long enough, queue animations
+						bloodOverlay.bleed();
+						orchestra.play();
+					}
+					else
+					{
+						//	Haven't dwelled long enough. Keep dwelling!
+						kinectMotion.dwell ++;
+					}
+				}
+				else
+				{
+					//	Dwell back to zero. Sorry :(
+					kinectMotion.dwell = 0;
+				}
 			}
 		});
 	}
@@ -297,15 +403,6 @@ var orchestra =
 		//	playing. We call the theme song as soon as the 
 		//	gun shot is done.
 		$("#" + package.gunShotID).attr("src", package.gunShotPath);
-			//.bind("ended", function(){ orchestra.playTheme(); });
-		/*$("#" + package.themeSongID)
-			.attr("src", package.themeSongPath)*/
-	},
-
-	playTheme: function()
-	{
-		//	Plays the 007 theme song
-		$("#" + package.themeSongID).get(0).play();
 	},
 
 	play: function()
@@ -317,8 +414,8 @@ var orchestra =
 	pause: function()
 	{
 		//	Pauses all currently playing music
-		$("#" + package.themeSongID).get(0).pause();
 		$("#" + package.gunShotID).get(0).pause();
+		$("#" + package.gunShotID).get(0).currentTime = 0;
 	},
 }
 
@@ -326,6 +423,14 @@ $(function()
 {
 	kinectMotion.init();
 	barrelOverlay.init();
-	//ballOverlay.init();
+	ballOverlay.init();
 	bloodOverlay.init();
+	ballOverlay.animate();
+
+	$("#" + package.resetButtonID).bind("click", function()
+	{
+		bloodOverlay.heal();
+		orchestra.pause();
+		kinectMotion.dwell = 0;
+	});
 });
